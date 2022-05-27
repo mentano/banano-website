@@ -47,6 +47,7 @@
 		}
 	}
 	function generateRandomMonkey() {
+		window.plausible('MonKey Randomized');
 		let address = genAddress();
 		generateMonkey(address);
 		setTimeout(() => {
