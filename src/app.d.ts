@@ -20,9 +20,11 @@ declare namespace svelte.JSX {
 	}
 }
 
+interface PlausibleObj {
+	callback?: function;
+	props?: { [key: string]: string };
+}
+
 interface Window {
-	mozRequestAnimationFrame: any;
-	webkitRequestAnimationFrame: any;
-	msRequestAnimationFrame: any;
-	plausible: (str: string) => void;
+	plausible: (goalName: string, obj?: PlausibleObj) => void;
 }

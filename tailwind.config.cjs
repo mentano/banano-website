@@ -24,6 +24,11 @@ module.exports = {
 			out: 'ease-out'
 		},
 		extend: {
+			screens: {
+				'3xl': '1792px',
+				'4xl': '2048px',
+				'5xl': '2800px'
+			},
 			colors: {
 				'c-primary': withOpacityValue('--c-primary'),
 				'c-secondary': withOpacityValue('--c-secondary'),
@@ -72,6 +77,7 @@ module.exports = {
 				18: '4.5rem',
 				19: '4.75rem',
 				22: '5.5rem',
+				68: '17rem',
 				128: '32rem',
 				140: '35rem',
 				190: '45rem',

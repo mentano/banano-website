@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { IFaq } from '$lib/ts/interfaces/IFaq';
-	import Button from '../Button.svelte';
+	import { expandCollapse } from '$lib/ts/transitions';
 	import IconChevron from '../icons/IconChevron.svelte';
 
 	export let faq: IFaq[];
@@ -14,7 +14,9 @@
 
 	function onClick(index: number) {
 		editedFaq[index].isOpen = !editedFaq[index].isOpen;
-		if (editedFaq[index].isOpen) window.plausible('FAQ Opened');
+		if (editedFaq[index].isOpen) {
+			window.plausible('FAQ Opened', { props: { Question: editedFaq[index].question } });
+		}
 	}
 </script>
 
@@ -43,7 +45,11 @@
 						/>
 					</button>
 					{#if singleFaq.isOpen}
-						<div class="px-6 md:px-8 py-5 markdown">{@html singleFaq.answer}</div>
+						<div transition:expandCollapse class="markdown overflow-hidden">
+							<div class="px-6 md:px-8 py-5">
+								{@html singleFaq.answer}
+							</div>
+						</div>
 					{/if}
 				</div>
 			{/each}

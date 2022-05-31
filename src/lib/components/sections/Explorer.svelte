@@ -8,10 +8,16 @@
 	let isHashAsync = (s: string) => true;
 
 	async function handleSubmit(e: Event) {
-		if (isAddressAsync(inputExplorer) || isHashAsync(inputExplorer)) {
+		if (
+			inputExplorer !== '' &&
+			inputExplorer !== null &&
+			inputExplorer !== undefined &&
+			(isAddressAsync(inputExplorer) || isHashAsync(inputExplorer))
+		) {
+			window.plausible('Creeper Used', { props: { 'Address Validity': 'Valid' } });
 			window.open(`https://creeper.banano.cc/explorer/auto/${inputExplorer}`, '_blank');
-			inputExplorer = '';
 		} else {
+			window.plausible('Creeper Used', { props: { 'Address Validity': 'Invalid' } });
 			inputError = true;
 		}
 	}
@@ -68,7 +74,11 @@
 							: 'border-transparent hover:border-c-on-bg/20 focus:border-c-primary'} transition"
 					/>
 				</label>
-				<Button padding="px-8 md:px-12 py-4" class="w-full md:w-auto max-w-sm mt-3 mb-1.5">
+				<Button
+					type="submit"
+					padding="px-8 md:px-12 py-4"
+					class="w-full md:w-auto max-w-sm mt-3 mb-1.5"
+				>
 					Search
 				</Button>
 			</form>

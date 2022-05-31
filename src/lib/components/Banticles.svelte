@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { inview } from 'svelte-inview';
-	import { onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
 
 	export let particleSrc: string;
 	export let lineColorRgb: IRgb;
@@ -33,6 +31,7 @@
 	}
 
 	let particles: IParticle[];
+	let container: HTMLDivElement;
 	let containerWidth: number;
 	let containerHeight: number;
 	let containerArea: number;
@@ -41,28 +40,45 @@
 	let mouseX: number;
 	let mouseY: number;
 	let isBanticlesPaused = false;
+	let isFirstInitAnimation = true;
 	let { r, g, b } = lineColorRgb;
 	let particleCount: number;
 	let particleArea: number;
 
 	let img: HTMLImageElement;
-	let imgLoaded = false;
 	let dpr: number;
 
+	let isInitialSetupTriggered = false;
+	$: if (container !== undefined) initSetup();
 	$: if (containerHeight !== undefined && containerWidth !== undefined)
 		containerArea = containerHeight * containerWidth;
 	$: if (containerArea !== undefined && particleArea !== undefined) setParticleCount();
-	$: if (imgLoaded && canvas !== undefined) init();
 
-	function init() {
-		context = canvas.getContext('2d');
+	function initSetup() {
+		if (isInitialSetupTriggered) return;
+		isInitialSetupTriggered = true;
+		img = new Image();
+		img.src = particleSrc;
+		img.onload = () => {
+			particleArea = img.naturalWidth * img.naturalHeight;
+			containerArea = containerHeight * containerWidth;
+			setParticleCount();
+			particles = Array.from(Array(particleCount), (_, i) => createNewParticle(true));
+			context = canvas.getContext('2d');
+			setCanvasSizeAndScaling();
+			initAnimation();
+		};
+	}
+
+	const initAnimation = () => window.requestAnimationFrame(draw);
+
+	function setCanvasSizeAndScaling() {
 		dpr = Math.max(Math.min(window.devicePixelRatio, 2), 1);
 		canvas.width = Math.ceil(containerWidth * dpr);
 		canvas.height = Math.ceil(containerHeight * dpr);
 		if (dpr > 1) context.scale(dpr, dpr);
 		canvas.style.width = containerWidth + 'px';
 		canvas.style.height = containerHeight + 'px';
-		window.requestAnimationFrame(draw);
 	}
 
 	function createNewParticle(isInitial = false): IParticle {
@@ -116,11 +132,13 @@
 	}
 
 	function draw() {
+		if (canvas === null || canvas === undefined) return;
 		if (
 			containerHeight > Math.ceil(canvas.height / dpr) ||
 			containerWidth > Math.ceil(canvas.width / dpr)
 		) {
-			init();
+			setCanvasSizeAndScaling();
+			initAnimation();
 			return;
 		}
 
@@ -235,18 +253,6 @@
 
 	const setParticleCount = () =>
 		(particleCount = Math.ceil((containerArea / particleArea) * density));
-
-	onMount(() => {
-		img = new Image();
-		img.src = particleSrc;
-		img.onload = () => {
-			imgLoaded = true;
-			particleArea = img.naturalWidth * img.naturalHeight;
-			containerArea = containerHeight * containerWidth;
-			setParticleCount();
-			particles = Array.from(Array(particleCount), (_, i) => createNewParticle(true));
-		};
-	});
 </script>
 
 <svelte:window on:touchstart={handleTouchStart} on:mousemove={handleMouseMove} />
@@ -254,11 +260,15 @@
 	use:inview
 	on:enter={onEnter}
 	on:exit={onExit}
+	bind:this={container}
 	bind:clientWidth={containerWidth}
 	bind:clientHeight={containerHeight}
 	class="w-full h-full absolute left-0 top-0 overflow-hidden z-0"
 >
-	{#if containerWidth !== undefined && containerHeight !== undefined}
-		<canvas in:fade={{ duration: 500 }} bind:this={canvas} />
-	{/if}
+	<img
+		src={particleSrc}
+		alt="Banana Particle"
+		style="position:absolute;height:0px;width:0px;opacity:0;"
+	/>
+	<canvas bind:this={canvas} />
 </div>

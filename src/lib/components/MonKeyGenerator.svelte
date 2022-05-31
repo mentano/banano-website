@@ -16,10 +16,10 @@
 
 	const defaultAddress = 'ban_1bananobh5rat99qfgt1ptpieie5swmoth87thi74qgbfrij7dcgjiij94xr';
 	let inputValue: string = defaultAddress;
-	let randomizedPreviousAddress: string;
 	let inputError = false;
 	let monkeySvg: string | undefined;
 	let monkeyLoadState: TMonkeyLoadState = 'idle';
+	let randomizedAddresses: string[] = [];
 
 	async function getMonkey(address: string) {
 		try {
@@ -38,9 +38,13 @@
 			monkeyLoadState = 'loading';
 			let monkeyResult = await getMonkey(address);
 			if (monkeyResult !== undefined) {
-				address !== defaultAddress && address !== randomizedPreviousAddress
-					? window.plausible('MonKey Viewed (Non-default)')
-					: window.plausible('MonKey Viewed');
+				address !== defaultAddress && !randomizedAddresses.includes(address)
+					? window.plausible('MonKey Generator Used', {
+							props: { Address: 'Custom' }
+					  })
+					: window.plausible('MonKey Generator Used', {
+							props: { Address: 'Default' }
+					  });
 				monkeyLoadState = 'loaded';
 				setTimeout(() => {
 					monkeySvg = monkeyResult;
@@ -52,9 +56,11 @@
 		}
 	}
 	function generateRandomMonkey() {
-		window.plausible('MonKey Randomized');
+		window.plausible('MonKey Generator Used', {
+			props: { Address: 'Random' }
+		});
 		let address = genAddress();
-		randomizedPreviousAddress = address;
+		randomizedAddresses.push(address);
 		generateMonkey(address);
 		setTimeout(() => {
 			inputValue = address;
@@ -131,7 +137,7 @@
 					<Button
 						padding="px-8 py-3"
 						class="w-full max-w-xxxs"
-						type="primary"
+						buttonType="primary"
 						onClick={resetGeneration}
 					>
 						Again!
@@ -146,23 +152,27 @@
 						in:formIn|local={{ delay: 100 }}
 						on:submit|preventDefault={() => generateMonkey(inputValue)}
 						class="flex flex-col items-center my-auto relative mx-4 md:mx-6"
+						id="monkey-input"
 					>
 						<div class="w-full">
-							<input
-								name="bananoAddress"
-								id="bananoAddress"
-								bind:value={inputValue}
-								on:input={clearInputError}
-								class="w-full font-medium placeholder-c-on-bg/50 text-c-on-bg px-4 py-4.5 mt-2 rounded-xl
+							<label for="monkey-input" class="w-full">
+								<p class="w-0 h-0 overflow-hidden opacity-0 pointer-events-none">Banano Address</p>
+								<input
+									name="bananoAddress"
+									id="bananoAddress"
+									bind:value={inputValue}
+									on:input={clearInputError}
+									class="w-full font-medium placeholder-c-on-bg/50 text-c-on-bg px-4 py-4.5 mt-2 rounded-xl
                   border-[3px] bg-c-on-bg/5 {inputError
-									? 'border-c-danger'
-									: 'border-c-on-bg/8 hover:border-c-on-bg/30 focus:border-c-primary'} transition"
-								type="text"
-								autocomplete="off"
-								placeholder="Enter your address"
-							/>
+										? 'border-c-danger'
+										: 'border-c-on-bg/8 hover:border-c-on-bg/30 focus:border-c-primary'} transition"
+									type="text"
+									autocomplete="off"
+									placeholder="Enter your address"
+								/>
+							</label>
 						</div>
-						<Button type="primary" class="w-full mt-3">Show Me</Button>
+						<Button type="submit" buttonType="primary" class="w-full mt-3">Show Me</Button>
 						<p class="text-c-danger px-4 mt-5 font-bold text-sm">
 							{#if inputError}
 								Enter a valid address or click "Randomize!".
@@ -179,7 +189,7 @@
 						<Button
 							padding="px-8 py-3"
 							class="w-full max-w-xxxs"
-							type="secondary"
+							buttonType="secondary"
 							onClick={generateRandomMonkey}
 						>
 							Randomize!
