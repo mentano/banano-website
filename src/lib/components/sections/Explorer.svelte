@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { bananoServices } from '$lib/ts/constants/bananoServices';
+
 	import { inview } from 'svelte-inview';
 	import Button from '../Button.svelte';
 
@@ -15,7 +17,7 @@
 			(isAddressAsync(inputExplorer) || isHashAsync(inputExplorer))
 		) {
 			window.plausible('Creeper Used', { props: { 'Address Validity': 'Valid' } });
-			window.open(`https://creeper.banano.cc/explorer/auto/${inputExplorer}`, '_blank');
+			window.open(`${bananoServices.creeper.url}/explorer/auto/${inputExplorer}`, '_blank');
 		} else {
 			window.plausible('Creeper Used', { props: { 'Address Validity': 'Invalid' } });
 			inputError = true;
@@ -50,7 +52,7 @@
 			<p class="mt-3 text-lg container-b-small md:px-16 lg:px-24">
 				You have a banano address or a hash that you want to search? Or you just like creeping on
 				people? Go ahead, try our network explorer (creeper) below or visit <a
-					href="https://creeper.banano.cc"
+					href={bananoServices.creeper.url}
 					target="_blank"
 					class="hover:underline font-bold">creeper.banano.cc</a
 				>.
